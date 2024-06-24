@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,7 +28,7 @@
     <canvas id="gameCanvas" width="600" height="400"></canvas>
     <div id="stats"></div>
     <div id="topScorers"></div>
-    <script src="scripts.js"></script>
+
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -38,10 +42,51 @@
         let totalScore = 0;
         let secondsPlayed = 0;
         let gameOver = false;
+        let topScorers = [];
+
+        // Load images
+        const barronImage = new Image();
+        barronImage.src = "{{ '/assets/images/barron.png' | relative_url }}";
+        const autImage = new Image();
+        autImage.src = "{{ '/assets/images/aut.png' | relative_url }}";
+        const backgroundImage = new Image();
+        backgroundImage.src = "{{ '/assets/images/white_house.png' | relative_url }}";
+
+        function loadStoredData() {
+            const storedData = localStorage.getItem('gameData');
+            if (storedData) {
+                const data = JSON.parse(storedData);
+                topScorers = data.topScorers || [];
+                totalScore = data.totalScore || 0;
+                highScore = data.highScore || 0;
+            }
+        }
+
+        function saveStoredData() {
+            const data = {
+                topScorers,
+                totalScore,
+                highScore
+            };
+            localStorage.setItem('gameData', JSON.stringify(data));
+        }
+
+        function drawBackground() {
+            if (backgroundImage.complete) {
+                ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+            } else {
+                ctx.fillStyle = 'lightgray';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
 
         function drawGuy() {
-            ctx.fillStyle = 'blue';
-            ctx.fillRect(guy.x, guy.y, guy.width, guy.height);
+            if (barronImage.complete) {
+                ctx.drawImage(barronImage, guy.x, guy.y, guy.width, guy.height);
+            } else {
+                ctx.fillStyle = 'blue';
+                ctx.fillRect(guy.x, guy.y, guy.width, guy.height);
+            }
         }
 
         function drawDollar(dollar) {
@@ -51,8 +96,12 @@
         }
 
         function drawObstacle(obstacle) {
-            ctx.fillStyle = 'red';
-            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            if (autImage.complete) {
+                ctx.drawImage(autImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            } else {
+                ctx.fillStyle = 'red';
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            }
         }
 
         function generateDollar() {
@@ -78,6 +127,7 @@
             if (gameOver) return;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
             drawGuy();
 
             dollars.forEach((dollar, index) => {
@@ -139,14 +189,14 @@
             gameOver = false;
         }
 
-        async function checkTopScore() {
+        function checkTopScore() {
             if (topScorers.length < 10 || score > topScorers[topScorers.length - 1].score) {
                 const name = prompt("You've made the top 10! Enter your name:");
                 if (name) {
                     topScorers.push({ name, score });
                     topScorers.sort((a, b) => b.score - a.score);
                     topScorers = topScorers.slice(0, 10);
-                    await saveStoredData();
+                    saveStoredData();
                     displayTopScorers();
                 }
             }
@@ -192,11 +242,10 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // Load stored data and start the game
-        loadStoredData().then(() => {
-            displayTopScorers();
-            startGame();
-        });
+        // Load data and start the game
+        loadStoredData();
+        displayTopScorers();
+        startGame();
     </script>
 </body>
 </html>
