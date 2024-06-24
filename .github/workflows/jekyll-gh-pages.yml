@@ -1,8 +1,8 @@
 # Site settings
 title: White House Dollar Collector Game
 description: A fun game where you collect dollars and avoid obstacles in the White House
-baseurl: "" # the subpath of your site, e.g. /blog
-url: https://waffleninja100.github.io # Replace with your GitHub Pages URL
+baseurl: "/barron6" # the subpath of your site, e.g. /blog
+url: "https://waffleninja100.github.io" # Replace with your GitHub Pages URL
 
 # Build settings
 markdown: kramdown
